@@ -1,11 +1,16 @@
-var express = require('express');
-var app = express();
-var url = require('url');
-var validUrl = require('valid-url');
+const express = require('express');
+const app = express();
+const url = require('url');
+const path = require('path');
+const validUrl = require('valid-url');
 var userURL; // URL submitted by user
 
+app.use('/static', express.static(path.join(__dirname, 'public')));
+
+
+
 app.get('/', function(req, res) {
-        res.send('Send a URL');
+        res.sendfile(path.join(__dirname + '/public/index.html'));
 });
 
 app.get('/*', function(req, res) {
