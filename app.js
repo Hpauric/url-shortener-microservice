@@ -8,15 +8,15 @@ const mongodb = require('mongodb').MongoClient;
 
 
 var userURL; // URL submitted by user
-var shortURL; // Short URL generated
+var tempShortURL;
 var mongodbURL = "mongodb://localhost:27017/url-shortener-microservice";
-var newLinkReference = {
-  URL: "",
-  shortURL: ""
-}
 
+function insertNewURLIntoDatabase(newURL, shortURL) {
+  var newLinkReference = {
+    URL: newURL,
+    shortURL: shortURL
+  };
 
-function insertNewURLIntoDatabase() {
   mongodb.connect(mongodbURL, function(err, db) {
     if (err) throw err;
     var collection = db.collection('storedLinks');
@@ -28,6 +28,20 @@ function insertNewURLIntoDatabase() {
   });
 }
 
+function getURLFromShortURL(shortURL){
+  mongodb.connect(mongodbURL, function(err, db) {
+    if (err) throw err;
+    var collection = db.collection('storedLinks');
+    db.collection('storedLinks').findOne({shortURL: shortURL}, function(err, documents) {
+      if (err) throw err;
+      console.log("Document URL is: " + documents);
+      db.close();
+      return documents.URL;
+    });
+  });
+}
+
+
 
 //app.use('/static', express.static(path.join(__dirname, 'public')));
 
@@ -36,29 +50,27 @@ app.get('/', function(req, res) {
 });
 
 app.get('/*', function(req, res) {
-  //userURL = url.parse(req.url, true).path.slice(1);
-  console.log("URL is: " + userURL);
+  userURL = url.parse(req.url, true).path.slice(1);
+  // Check if the URL begins with '/new'
   if (userURL.slice(0, 4) === 'new/') {
-    //console.log("after conditional: " + userURL);
     userURL = userURL.slice(4);
-    //console.log("after slice: " + userURL);
     if (validUrl.isUri(userURL)) {
-      shortURL = shortid.generate();
-      //console.log(shortURL);
-      res.send('Looks like an URI ' + '\n' +
-        'Visit ' + shortURL + ' to be redirected');
+      tempShortURL = shortid.generate();
+      insertNewURLIntoDatabase(userURL, tempShortURL);
+        //console.log(shortURL);
+      res.send('A short ID for your URL has been generated.' + '\n' +
+        'To try the new URL, visit ' + tempShortURL + ' to be redirected');
     }
     else {
       //console.log('not valid');
-      res.send('Not a URI');
+      res.send('Not a valid URL');
     }
   }
-  else if (userURL === shortURL) {
-    //res.redirect(userURL);
-    res.send('Retrieve URL to send. No longer have it though!');
-  }
   else {
-    //console.log('no conditionals true');
+    var redirectURL = getURLFromShortURL(userURL);
+    if(redirectURL){
+      res.redirect(redirectURL);
+    }
   }
 
 });
