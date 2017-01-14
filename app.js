@@ -28,9 +28,13 @@ function insertNewURLIntoDatabase(newURL, shortURL) {
   });
 }
 
+<<<<<<< HEAD
 function getURLFromShortURL(shortURL){
   
   var localStoredURLValue;
+=======
+function getURLFromShortURL(shortURL, callback){
+>>>>>>> callback-feature
   
   mongodb.connect(mongodbURL, function(err, db) {
     if (err) throw err;
@@ -39,10 +43,15 @@ function getURLFromShortURL(shortURL){
       if (err) throw err;
       console.log("Document URL is: " + documents);
       console.log("Document URL REALLY is: " + documents.URL);
+<<<<<<< HEAD
       localStoredURLValue = documents.URL.toString();
       db.close();
       console.log("localStoredURLValue: " + localStoredURLValue);
       return localStoredURLValue;
+=======
+      callback(documents.URL);
+      db.close();
+>>>>>>> callback-feature
     });
   });
   
@@ -77,16 +86,24 @@ app.get('/*', function(req, res) {
     res.end();
   }
   else {
+<<<<<<< HEAD
     /*
     console.log("gets to else statement. URL is " + userURL);
     var redirectURL = getURLFromShortURL(userURL);
     console.log("redirect URL is: " + redirectURL);
     if(redirectURL){
       res.redirect(redirectURL);
+=======
+    //console.log("gets to else statement. URL is " + userURL);
+    getURLFromShortURL(userURL, function(databaseURL){
+       if(databaseURL){
+      res.redirect(databaseURL);
+>>>>>>> callback-feature
     }
     else {
       res.end();
     }
+<<<<<<< HEAD
     */
      mongodb.connect(mongodbURL, function(err, db) {
     if (err) throw err;
@@ -107,6 +124,11 @@ app.get('/*', function(req, res) {
     
     
     
+=======
+    });
+    //console.log("redirect URL is: " + redirectURL);
+   
+>>>>>>> callback-feature
   }
 
 });
