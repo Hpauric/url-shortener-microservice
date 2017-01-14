@@ -28,20 +28,22 @@ function insertNewURLIntoDatabase(newURL, shortURL) {
   });
 }
 
-function getURLFromShortURL(shortURL){
+function getURLFromShortURL(shortURL, callback){
+  
   mongodb.connect(mongodbURL, function(err, db) {
     if (err) throw err;
     var collection = db.collection('storedLinks');
     db.collection('storedLinks').findOne({shortURL: shortURL}, function(err, documents) {
       if (err) throw err;
       console.log("Document URL is: " + documents);
+      console.log("Document URL REALLY is: " + documents.URL);
+      callback(documents.URL);
       db.close();
-      return documents.URL;
     });
   });
+  
+  
 }
-
-
 
 //app.use('/static', express.static(path.join(__dirname, 'public')));
 
@@ -57,7 +59,7 @@ app.get('/*', function(req, res) {
     if (validUrl.isUri(userURL)) {
       tempShortURL = shortid.generate();
       insertNewURLIntoDatabase(userURL, tempShortURL);
-        //console.log(shortURL);
+       console.log("GETS to if statement");
       res.send('A short ID for your URL has been generated.' + '\n' +
         'To try the new URL, visit ' + tempShortURL + ' to be redirected');
     }
@@ -66,11 +68,22 @@ app.get('/*', function(req, res) {
       res.send('Not a valid URL');
     }
   }
+  else if(userURL === 'favicon.ico'){
+    //Do nothing
+    res.end();
+  }
   else {
-    var redirectURL = getURLFromShortURL(userURL);
-    if(redirectURL){
-      res.redirect(redirectURL);
+    //console.log("gets to else statement. URL is " + userURL);
+    getURLFromShortURL(userURL, function(databaseURL){
+       if(databaseURL){
+      res.redirect(databaseURL);
     }
+    else {
+      res.end();
+    }
+    });
+    //console.log("redirect URL is: " + redirectURL);
+   
   }
 
 });
