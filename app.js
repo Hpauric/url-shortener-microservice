@@ -29,25 +29,19 @@ function insertNewURLIntoDatabase(newURL, shortURL) {
 }
 
 function getURLFromShortURL(shortURL){
-  
-  var localStoredURLValue;
-  
   mongodb.connect(mongodbURL, function(err, db) {
     if (err) throw err;
     var collection = db.collection('storedLinks');
     db.collection('storedLinks').findOne({shortURL: shortURL}, function(err, documents) {
       if (err) throw err;
       console.log("Document URL is: " + documents);
-      console.log("Document URL REALLY is: " + documents.URL);
-      localStoredURLValue = documents.URL.toString();
       db.close();
-      console.log("localStoredURLValue: " + localStoredURLValue);
-      return localStoredURLValue;
+      return documents.URL;
     });
   });
-  
-  
 }
+
+
 
 //app.use('/static', express.static(path.join(__dirname, 'public')));
 
@@ -63,7 +57,7 @@ app.get('/*', function(req, res) {
     if (validUrl.isUri(userURL)) {
       tempShortURL = shortid.generate();
       insertNewURLIntoDatabase(userURL, tempShortURL);
-       console.log("GETS to if statement");
+        //console.log(shortURL);
       res.send('A short ID for your URL has been generated.' + '\n' +
         'To try the new URL, visit ' + tempShortURL + ' to be redirected');
     }
@@ -72,41 +66,11 @@ app.get('/*', function(req, res) {
       res.send('Not a valid URL');
     }
   }
-  else if(userURL === 'favicon.ico'){
-    //Do nothing
-    res.end();
-  }
   else {
-    /*
-    console.log("gets to else statement. URL is " + userURL);
     var redirectURL = getURLFromShortURL(userURL);
-    console.log("redirect URL is: " + redirectURL);
     if(redirectURL){
       res.redirect(redirectURL);
     }
-    else {
-      res.end();
-    }
-    */
-     mongodb.connect(mongodbURL, function(err, db) {
-    if (err) throw err;
-    var collection = db.collection('storedLinks');
-    db.collection('storedLinks').findOne({shortURL: userURL}, function(err, documents) {
-      if (err) throw err;
-      //console.log("Document URL is: " + documents);
-      //console.log("Document URL REALLY is: " + documents.URL);
-      //localStoredURLValue = documents.URL.toString();
-      res.redirect(documents.URL);
-      db.close();
-      //console.log("localStoredURLValue: " + localStoredURLValue);
-      //return localStoredURLValue;
-    });
-  });
-    
-    
-    
-    
-    
   }
 
 });
