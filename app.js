@@ -4,19 +4,19 @@ const url = require('url');
 const path = require('path');
 const validUrl = require('valid-url');
 const shortid = require('shortid');
-const mongodb = require('mongodb').MongoClient;
+const mongoClient = require('mongodb').MongoClient;
 
 
 var userURL; // URL submitted by user
 var tempShortURL;
-var mongodbURL = "mongodb://localhost:27017/url-shortener-microservice";
+var mongodbURL = process.env.MONGOLAB_URI;
 
 function insertNewURLIntoDatabase(newURL, shortURL) {
   var newLinkReference = {
     URL: newURL,
     shortURL: shortURL
   };
-  mongodb.connect(mongodbURL, function(err, db) {
+  mongoClient.connect(mongodbURL, function(err, db) {
     if (err) throw err;
     var collection = db.collection('storedLinks');
     collection.insert(newLinkReference, function(err, data) {
@@ -28,7 +28,7 @@ function insertNewURLIntoDatabase(newURL, shortURL) {
 }
 
 function getURLFromShortURL(shortURL, callback){
-  mongodb.connect(mongodbURL, function(err, db) {
+  mongoClient.connect(mongodbURL, function(err, db) {
     if (err) throw err;
     var collection = db.collection('storedLinks');
     db.collection('storedLinks').findOne({shortURL: shortURL}, function(err, documents) {
