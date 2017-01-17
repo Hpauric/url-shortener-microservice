@@ -10,6 +10,7 @@ const mongoClient = require('mongodb').MongoClient;
 var userURL; // URL submitted by user
 var tempShortURL;
 var mongodbURL = process.env.MONGOLAB_URI;
+var JSONResponse;
 
 function insertNewURLIntoDatabase(newURL, shortURL) {
   var newLinkReference = {
@@ -53,8 +54,11 @@ app.get('/*', function(req, res) {
     if (validUrl.isUri(userURL)) {
       tempShortURL = shortid.generate();
       insertNewURLIntoDatabase(userURL, tempShortURL);
-      res.send('A short ID for your URL has been generated.' + '\n' +
-        'To try the new URL, visit ' + tempShortURL + ' to be redirected');
+      JSONResponse = {
+        original_url : userURL,
+        short_url: "https://url-shortener-88.herokuapp.com/" + tempShortURL
+      };
+      res.send(JSON.stringify(JSONResponse));
     }
     else {
       res.send('Not a valid URL');
